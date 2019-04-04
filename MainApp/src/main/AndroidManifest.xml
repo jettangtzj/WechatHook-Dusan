@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!--读取缓存数据-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--访问wifi状态-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!--用于读取手机当前的状态-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- 更改设置 -->
@@ -42,7 +44,7 @@
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="eefb4113e935c01cc13551caf2b4e590"/>
+            android:value="b1b7e19dbbae851b290e8ac263f92399"/>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyBjYioQioQ1orOj_hujoRw6B7zwmTihYQg"/>

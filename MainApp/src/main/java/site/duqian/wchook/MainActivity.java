@@ -63,13 +63,13 @@ public class MainActivity extends BaseActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @BindView(R.id.et_config_time)
-    EditText et_config_time;
+    EditText et_config_time;//单次处理时间
     @BindView(R.id.et_send_greeting)
-    EditText et_send_greeting;
+    EditText et_send_greeting;//自定义打招呼内容
     @BindView(R.id.et_longitude)
-    EditText etLongitude;
+    EditText etLongitude;//经度
     @BindView(R.id.et_latitude)
-    EditText etLatitude;
+    EditText etLatitude;//纬度
     @BindView(R.id.tv_result)
     TextView tv_result;
     @BindView(R.id.btn_open_as)
@@ -359,6 +359,9 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 保存按钮事件
+     */
     @OnClick(R.id.btn_save)
     public void saveConfigs() {
         String longitude = etLongitude.getText().toString().trim();//经度
@@ -376,6 +379,11 @@ public class MainActivity extends BaseActivity {
         save2sp(longitude, latitude);
     }
 
+    /**
+     * 地图数据保存
+     * @param longitude
+     * @param latitude
+     */
     private void save2sp(String longitude, String latitude) {
         mSettings.setString(SP_LATITUDE, latitude);
         mSettings.setString(SP_LONGITUDE, longitude);
@@ -384,6 +392,9 @@ public class MainActivity extends BaseActivity {
 
     private long mPressedTime = 0;
 
+    /**
+     * 清除记录按钮事件
+     */
     @OnClick(R.id.btn_clear_config)
     public void getConfig() {
         //getLastConfig();
@@ -413,6 +424,9 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 地图配置按钮事件
+     */
     @OnClick(R.id.btn_get_map)
     public void getFromMap() {
         startActivityForResult(new Intent(context, MapActivity.class), 100);
@@ -438,7 +452,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setMapInfo(String latitude, String longitude, String address) {
-        String postion = "当前配置:经度=" + longitude + ",纬度=" + latitude + "\n位置=" + address + "\n\n";
+        String postion = "当前配置:\n经度=" + longitude + "\n纬度=" + latitude + "\n位置=" + address + "\n\n";
         LogUtils.debug(TAG, postion);
         etLongitude.setText(longitude);
         etLatitude.setText(latitude);

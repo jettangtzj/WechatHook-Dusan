@@ -100,18 +100,18 @@ public class CommonHook {
         @Override
         protected void beforeHookedMethod(MethodHookParam methodHookParam) throws Throwable {
             try {
-                Object object = methodHookParam.args[0];
-                if (object == null) return;
-                String abc = "";
-                if (!object.getClass().getSimpleName().contains("SpannableString")) {
-                    abc = (String) object;
-                    if (!TextUtils.isEmpty(abc)) {
-                        final String[] oldStrs = {"通讯录", "Contacts", "游戏", "扫一扫"};
-                        final String[] newStrs = {"杜小菜", "杜小菜", "被Androider 杜小菜Hook了", "duqian2010@gmail.com"};
-                        abc = ReplaceText(oldStrs, newStrs, abc);
-                        methodHookParam.args[0] = abc;
-                    }
-                }
+//                Object object = methodHookParam.args[0];
+//                if (object == null) return;
+//                String abc = "";
+//                if (!object.getClass().getSimpleName().contains("SpannableString")) {
+//                    abc = (String) object;
+//                    if (!TextUtils.isEmpty(abc)) {
+//                        final String[] oldStrs = {"通讯录", "Contacts", "游戏", "扫一扫"};
+//                        final String[] newStrs = {"杜小菜", "杜小菜", "被Androider 杜小菜Hook了", "duqian2010@gmail.com"};
+//                        abc = ReplaceText(oldStrs, newStrs, abc);
+//                        methodHookParam.args[0] = abc;
+//                    }
+//                }
             } catch (Exception e) {
                 //LogUtils.debug(TAG,"textMethodHook error "+e);
             }

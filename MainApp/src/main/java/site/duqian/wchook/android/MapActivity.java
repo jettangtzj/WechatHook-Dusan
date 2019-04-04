@@ -23,6 +23,7 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMapOptions;
+import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.TextureMapView;
 import com.amap.api.maps.model.BitmapDescriptor;
@@ -69,21 +70,21 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         GoogleMap.OnCameraMoveListener, AMapLocationListener,
         CompoundButton.OnCheckedChangeListener, AMap.OnMapClickListener{
     private static final String TAG = MapActivity.class.getSimpleName();
-    private ToggleButton mcheckbtn;
-    private Button mapbtn;
-    private Button btn_confirm;
-    private TextView tv_position;
+    private ToggleButton mcheckbtn;//地图自动切换按钮
+    private Button mapbtn;//地图切换按钮
+    private Button btn_confirm;//确定所选按钮
+    private TextView tv_position;//position文字说明
     private LinearLayout mContainerLayout;
     private LinearLayout.LayoutParams mParams;
-    private TextureMapView mAmapView;
-    private MapView mGoogleMapView;
+    private TextureMapView mAmapView;//高德地图显示控件
+    private MapView mGoogleMapView;//谷歌地图显示控件
     private float zoom = 10;
     private double latitude = 23.10485;
     private double longitude = 113.388975;
     private boolean mIsAmapDisplay = true;
     private boolean mIsAuto = true;
-    private AMap amap;
-    private GoogleMap googlemap;
+    private AMap amap;//高德地图
+    private GoogleMap googlemap;//谷歌地图
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
     private AlphaAnimation anappear;
@@ -103,7 +104,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         initView();
         initGDMap(savedInstanceState);
         configGDLocation();
-        //changeToGoogleMapView();
         getLastPostion();
     }
 
@@ -123,35 +123,19 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             .defaultMarker(BitmapDescriptorFactory.HUE_RED);
     private MarkerOptions markerOption = null;
 
-    //高德地图
-    @Override
-    public void onMapClick(LatLng latLng) {
-        longitude = latLng.longitude;
-        latitude = latLng.latitude;
-        initGeocodeSearch(latLng);
-    }
 
     //高德地图，纬度/经度的反向地理编码
     private void initGeocodeSearch(LatLng latLng) {
-        if (geocoderSearch==null) {
-            geocoderSearch = new GeocodeSearch(this);
-            geocoderSearch.setOnGeocodeSearchListener(new GeocodeSearch.OnGeocodeSearchListener() {
-                @Override
-                public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
-                    RegeocodeAddress regeocodeAddress = regeocodeResult.getRegeocodeAddress();
-                    formatAddress = regeocodeAddress.getFormatAddress();
-                    LogUtils.debug(TAG,"regeocodeResult："+ formatAddress);
-                    setCurrentPositionInfo();
-                    addCenterMarker(latLng);
-                }
-
-                @Override
-                public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {}
-            });
-        }
+        longitude = latLng.longitude;
+        latitude = latLng.latitude;
+        //加入中心点
+        addCenterMarker(latLng);
+        //移动到此为中心点
+        CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+        amap.moveCamera(mCameraUpdate);
         // 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
-        LatLonPoint latLonPoint = new LatLonPoint(latLng.latitude,latLng.longitude);
-        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200,GeocodeSearch.AMAP);
+        LatLonPoint latLonPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
+        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200, GeocodeSearch.AMAP);
         geocoderSearch.getFromLocationAsyn(query);
     }
 
@@ -163,11 +147,15 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         tv_position.setBackgroundColor(getResources().getColor(R.color.colorWhite));
     }
 
+    //高德地图-地图中心点
     private void addCenterMarker(LatLng latlng) {
         if (null == centerMarker) {
             markerOption = new MarkerOptions();
             markerOption.icon(ICON_RED);//ICON_RED  ICON_YELLOW
             centerMarker = amap.addMarker(markerOption);
+            centerMarker.setPosition(latlng);
+            centerMarker.setTitle("当前坐标："+longitude+","+latitude+"\n"+formatAddress);
+        }else{
             centerMarker.setPosition(latlng);
             centerMarker.setTitle("当前坐标："+longitude+","+latitude+"\n"+formatAddress);
         }
@@ -225,21 +213,38 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         mContainerLayout = (LinearLayout) findViewById(R.id.map_container);
     }
 
+    //初始化高德地图
     private void initGDMap(Bundle savedInstanceState) {
         mAmapView = new TextureMapView(this);
         mParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         mContainerLayout.addView(mAmapView, mParams);
         mAmapView.onCreate(savedInstanceState);
-        if (amap == null) {
+        if (amap == null) {//如果高德地图对象为空
             amap = mAmapView.getMap();
-            amap.setOnCameraChangeListener(this);
-            amap.setOnMapClickListener(this);//new
+            amap.setOnCameraChangeListener(this);//地图缩放事件
+            amap.setOnMapClickListener(this);//地图点击事件
         }
         anappear = new AlphaAnimation(0, 1);
         andisappear = new AlphaAnimation(1, 0);
         anappear.setDuration(5000);
         andisappear.setDuration(5000);
+        geocoderSearch = new GeocodeSearch(this);
+        geocoderSearch.setOnGeocodeSearchListener(new GeocodeSearch.OnGeocodeSearchListener() {
+            @Override
+            public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
+                System.out.println("==========return code=："+ i);
+                if(i == 1000){
+                    RegeocodeAddress regeocodeAddress = regeocodeResult.getRegeocodeAddress();
+                    formatAddress = regeocodeAddress.getFormatAddress();
+                    LogUtils.debug(TAG,"regeocodeResult："+ formatAddress);
+                    setCurrentPositionInfo();
+                }
+            }
+
+            @Override
+            public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {}
+        });
     }
 
     @Override
@@ -263,6 +268,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         }
     }
 
+    //切换为高德地图模式
     private void changeToAmapView() {
         if (googlemap != null) {
             zoom = googlemap.getCameraPosition().zoom;
@@ -303,6 +309,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         }
     };
 
+    //切换为谷歌地图模式
     private void changeToGoogleMapView() {
         zoom = mAmapView.getMap().getCameraPosition().zoom;
         latitude = mAmapView.getMap().getCameraPosition().target.latitude;
@@ -320,6 +327,15 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         handler.sendEmptyMessageDelayed(0, 500);
     }
 
+    //高德地图点击事件
+    @Override
+    public void onMapClick(LatLng latLng) {
+        longitude = latLng.longitude;
+        latitude = latLng.latitude;
+        initGeocodeSearch(latLng);
+    }
+
+    //高德地图缩放事件
     @Override
     public void onCameraChange(com.amap.api.maps.model.CameraPosition cameraPosition) {
 
@@ -462,11 +478,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 && aMapLocation.getErrorCode() == 0) {
             //longitude = aMapLocation.getLongitude();
             //latitude = aMapLocation.getLatitude();
-            if (!aMapLocation.getCountry().equals("中国")){
-                changeToGoogleMapView();
-            } else {
-                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude), 15));
-            }
+            amap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude), 15));
             //Toast.makeText(context,aMapLocation.getCountry(),Toast.LENGTH_LONG).show();
             mIsAuto = false;
             mcheckbtn.setChecked(false);
